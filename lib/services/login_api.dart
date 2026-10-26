@@ -5,4 +5,4 @@ import 'package:retrofit/retrofit.dart';
 part 'login_api.g.dart';
 
 @RestApi()
-abstract
+
