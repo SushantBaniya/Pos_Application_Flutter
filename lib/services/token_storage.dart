@@ -6,7 +6,8 @@ class TokenStorage {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
 
-  Future<void> saveTokens(String accessToken, String refreshToken) async {
+
+  Future<void> saveTokens({required String accessToken, required String refreshToken}) async {
     await _secureStorage.write(key: _accessTokenKey, value: accessToken);
     await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
   }
