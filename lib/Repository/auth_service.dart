@@ -1,5 +1,6 @@
 import 'package:pos_app/services/token_storage.dart';
 import 'package:pos_app/services/login_api.dart';
+import 'package:pos_app/models/login.dart';
 
 class AuthService {
   final TokenStorage tokenStorage;
@@ -12,7 +13,5 @@ class AuthService {
 
     await tokenStorage.saveTokens(accessToken: response.tokens.accessToken, refreshToken: response.tokens.refreshToken);
     return response;
-  };
-
-  
+  }
 }
