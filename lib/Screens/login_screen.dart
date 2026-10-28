@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:pos_app/notifiers/login_notifiers.dart';
 
 class Options extends Notifier<int> {
   @override
@@ -130,8 +131,17 @@ class LoginForm extends ConsumerStatefulWidget {
 class _LoginFormState extends ConsumerState<LoginForm> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loginResponse = ref.watch(loginNotifierProvider);
     return Column(
       children: [
         const SizedBox(height: 40),
@@ -174,7 +184,25 @@ class _LoginFormState extends ConsumerState<LoginForm> {
         ),
         ElevatedButton( // Dont need to style this button as it will inherit the style from the theme defined in main.dart
           onPressed: () {
-            // Handle login logic here
+            final email = emailController.text.trim();
+            final password = passwordController.text.trim();
+            ref.read(loginNotifierProvider.notifier).login(email, password);
+            loginResponse.when(
+              data: (data) {
+                if (data != null) {
+                  // Handle successful login, e.g., navigate to the home screen
+                  debugPrint('Login successful:');
+                }
+              },
+              loading: () {
+                // Optionally show a loading indicator
+                debugPrint('Logging in...');
+              },
+              error: (error, stackTrace) {
+                // Handle login error, e.g., show a snackbar or dialog
+                debugPrint('Login failed: $error');
+              },
+            );
           },
           child: const Text('Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
         ),
