@@ -13,8 +13,8 @@ class AuthService {
     try {
       final response = await loginApi.login(request);
       await tokenStorage.saveTokens(
-        accessToken: response.tokens.accessToken,
-        refreshToken: response.tokens.refreshToken,
+        accessToken: response.tokens.access,
+        refreshToken: response.tokens.refresh,
       );
       return response;
     } catch (e) {

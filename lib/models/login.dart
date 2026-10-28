@@ -29,15 +29,15 @@ class LoginResponse {
 }
 
 class Tokens {
-  final String accessToken;
-  final String refreshToken;
+  final String access;
+  final String refresh;
 
-  Tokens({required this.accessToken, required this.refreshToken});
+  Tokens({required this.access, required this.refresh});
 
   factory Tokens.fromJson(Map<String, dynamic> json) {
     return Tokens(
-      accessToken: json['access_token'] as String,
-      refreshToken: json['refresh_token'] as String,
+      access: json['access'] as String,
+      refresh: json['refresh'] as String,
     );
   }
 }
