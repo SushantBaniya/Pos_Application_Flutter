@@ -258,44 +258,91 @@ class SignUpForm extends ConsumerStatefulWidget {
 }
 
 class _SignUpFormState extends ConsumerState<SignUpForm> {
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController businessNameController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+    final signupResponse = ref.watch(signupNotifierProvider);
     return Column(
       children: [
         const SizedBox(height: 20),
         TextField(
           decoration: InputDecoration(
-            labelText: 'Email',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            labelText: 'Username',
+            prefixIcon: const Icon(Icons.person, color: Colors.green),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
+          controller: usernameController,
+        ),
+        const SizedBox(height: 20),
+        TextField(
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.email, color: Colors.green),
+            labelText: 'Email',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
+          ),
+          controller: emailController,
         ),
         const SizedBox(height: 20),
         TextField(
           obscureText: true,
           decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.lock, color: Colors.green),
             labelText: 'Password',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
+          controller: passwordController,
         ),
         const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green, // button color
-            foregroundColor: Colors.white, // text and icon color
-            minimumSize: const Size(double.infinity, 52), // full width, 52 tall
-            elevation: 2, // shadow depth (0 = flat)
-            shadowColor: Colors.black45,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+        TextField(
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.phone, color: Colors.green),
+            labelText: 'Phone',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
-          child: const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          controller: phoneController,
+        ),
+        const SizedBox(height: 20),
+        TextField(
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.business, color: Colors.green),
+            labelText: 'Business Name',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
+          ),
+          controller: businessNameController,
+        ),
+        const SizedBox(height: 40),
+        ElevatedButton(
+          onPressed: () {
+            final username = usernameController.text.trim();
+            final email = emailController.text.trim();
+            final password = passwordController.text.trim();
+            final phone = phoneController.text.trim();
+            final businessName = businessNameController.text.trim();
+
+            ref.read(signupNotifierProvider.notifier).signup(username, email, password, phone, businessName);
+            signupResponse.when(
+              data: (data) {
+                if (data != null) {
+                  // Handle successful signup, e.g., navigate to the home screen
+                  debugPrint('Signup successful: ${data.message}');
+                }
+              },
+              loading: () {
+                // Optionally show a loading indicator
+                debugPrint('Signing up...');
+              },
+              error: (error, stackTrace) {
+                // Handle signup error, e.g., show a snackbar or dialog
+                debugPrint('Signup failed: $error');
+              },
+            );
+          },
+          child: const Text('Signup', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         ),
       ],
     );

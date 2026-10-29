@@ -36,10 +36,10 @@ class SignupNotifier extends AsyncNotifier<SignupResponse?> {
     return null;
   }
 
-  Future<void> signup(String email, String password) async {
+  Future<void> signup(String username, String email, String password, String phone, String businessName) async {
     state = const AsyncValue.loading();
     try {
-      final request = SignupRequest(email: email, password: password);
+      final request = SignupRequest(username: username, email: email, password: password, phone_number: phone, business_name: businessName);
       final authService = ref.read(authServiceProvider);
       final response = await authService.signup(request);
       state = AsyncValue.data(response);
@@ -50,3 +50,7 @@ class SignupNotifier extends AsyncNotifier<SignupResponse?> {
     }
   }
 }
+
+final signupNotifierProvider = AsyncNotifierProvider<SignupNotifier, SignupResponse?>(
+  () => SignupNotifier(),
+);
