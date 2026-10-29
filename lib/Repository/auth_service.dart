@@ -1,11 +1,11 @@
 import 'package:pos_app/services/token_storage.dart';
-import 'package:pos_app/services/login_api.dart';
+import 'package:pos_app/services/retrofit_all.dart';
 import 'package:pos_app/models/login.dart';
 import 'package:pos_app/core/error/exceptions.dart';
 
 class AuthService {
   final TokenStorage tokenStorage;
-  final LoginApi loginApi;
+  final AuthApi loginApi;
 
   AuthService({required this.tokenStorage, required this.loginApi});
 
