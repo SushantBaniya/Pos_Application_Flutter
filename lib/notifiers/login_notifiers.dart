@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/models/login.dart';
 import 'package:pos_app/notifiers/providers.dart';
-
+import 'package:pos_app/models/signup.dart';
 
 class LoginNotifier extends AsyncNotifier<LoginResponse?> {
     @override
@@ -29,3 +29,24 @@ class LoginNotifier extends AsyncNotifier<LoginResponse?> {
 final loginNotifierProvider = AsyncNotifierProvider<LoginNotifier, LoginResponse?>(
   () => LoginNotifier(),
 );
+
+class SignupNotifier extends AsyncNotifier<SignupResponse?> {
+  @override
+  Future<SignupResponse?> build() async {
+    return null;
+  }
+
+  Future<void> signup(String email, String password) async {
+    state = const AsyncValue.loading();
+    try {
+      final request = SignupRequest(email: email, password: password);
+      final authService = ref.read(authServiceProvider);
+      final response = await authService.signup(request);
+      state = AsyncValue.data(response);
+    } on SocketException catch (e) {
+      state = AsyncValue.error('No Internet connection: ${e.message}', StackTrace.current);
+    } catch (e) {
+      state = AsyncValue.error('Signup failed: ${e.toString()}', StackTrace.current);
+    }
+  }
+}
