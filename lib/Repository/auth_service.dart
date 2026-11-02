@@ -18,6 +18,7 @@ class AuthService {
         accessToken: response.tokens.access,
         refreshToken: response.tokens.refresh,
       );
+      await tokenStorage.saveRememberMe(false); // Save remember me status
       return response;
     } catch (e) {
       throw mapError(e);

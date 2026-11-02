@@ -23,4 +23,13 @@ class TokenStorage {
     await _secureStorage.delete(key: _accessTokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
   }
+
+  Future<void> saveRememberMe(bool rememberMe) async {
+    await _secureStorage.write(key: 'remember_me', value: rememberMe.toString());
+  }
+
+  Future<bool> getRememberMe() async {
+    final value = await _secureStorage.read(key: 'remember_me');
+    return value != null ? value == 'true' : false;
+  }
 }

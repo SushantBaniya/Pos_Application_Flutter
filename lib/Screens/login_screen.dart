@@ -129,6 +129,7 @@ class LoginForm extends ConsumerStatefulWidget {
 }
 
 class _LoginFormState extends ConsumerState<LoginForm> {
+  bool _rememberMe = false;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -167,7 +168,13 @@ class _LoginFormState extends ConsumerState<LoginForm> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Remember me", style: TextStyle(color: Colors.grey[600])),
+            Checkbox(
+              value: _rememberMe, // You can manage this state as needed
+              onChanged: (value) {
+                // Handle remember me logic here
+              },
+            ),
+            Text('Remember Me', style: TextStyle(color: Colors.green)),
             TextButton(
               onPressed: () {
                 // Handle forgot password logic here
