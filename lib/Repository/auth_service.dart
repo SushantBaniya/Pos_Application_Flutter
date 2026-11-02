@@ -11,14 +11,14 @@ class AuthService {
 
   AuthService({required this.tokenStorage, required this.loginApi, required this.signupApi});
 
-  Future<LoginResponse> login(LoginRequest request) async {
+  Future<LoginResponse> login(LoginRequest request, bool rememberMe) async {
     try {
       final response = await loginApi.login(request);
       await tokenStorage.saveTokens(
         accessToken: response.tokens.access,
         refreshToken: response.tokens.refresh,
       );
-      await tokenStorage.saveRememberMe(false); // Save remember me status
+      await tokenStorage.saveRememberMe(rememberMe);
       return response;
     } catch (e) {
       throw mapError(e);

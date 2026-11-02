@@ -142,6 +142,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    final rememberMeState = ref.watch(rememberMeProvider);
     final loginResponse = ref.watch(loginNotifierProvider);
     return Column(
       children: [
@@ -171,7 +172,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             Checkbox(
               value: _rememberMe, // You can manage this state as needed
               onChanged: (value) {
-                // Handle remember me logic here
+                ref.read(rememberMeProvider.notifier).setRememberMe(value ?? true);
               },
             ),
             Text('Remember Me', style: TextStyle(color: Colors.green)),
