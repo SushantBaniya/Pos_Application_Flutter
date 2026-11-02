@@ -29,3 +29,18 @@ final authServiceProvider = Provider<AuthService>((ref) {
 });
 
 
+final authStartupProvider = FutureProvider<void>((ref) async {
+  final tokenStorage = ref.watch(tokenStorageProvider);
+  final rememberMe = await tokenStorage.getRememberMe();
+  if (rememberMe) {
+    final accessToken = await tokenStorage.getAccessToken();
+      if (accessToken != null) {
+        return ;
+      } else {
+        
+      }
+    } else {
+      // User is not remembered, navigate to login screen
+      // You can set a state or navigate to the login screen here
+    }
+});

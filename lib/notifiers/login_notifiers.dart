@@ -59,11 +59,12 @@ final signupNotifierProvider = AsyncNotifierProvider<SignupNotifier, SignupRespo
 class RememberMeNotifier extends AsyncNotifier<bool> {
   @override
   Future<bool> build() async {
-    return false; // Default value for remember me is false
+    return ref.read(tokenStorageProvider).getRememberMe();
   }
 
   void setRememberMe(bool value) {
     state = AsyncValue.data(value);
+    ref.read(tokenStorageProvider).saveRememberMe(value);
   }
 }
 
