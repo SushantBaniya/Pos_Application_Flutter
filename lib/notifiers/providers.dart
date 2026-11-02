@@ -27,3 +27,5 @@ final authServiceProvider = Provider<AuthService>((ref) {
   final authApi = ref.watch(authApiProvider);
   return AuthService(tokenStorage: tokenStorage, loginApi: authApi, signupApi: authApi); // return an object of AuthService class which is created by passing the tokenStorage and loginApi objects to its constructor. The AuthService class provides methods for logging in and managing tokens, and it uses the TokenStorage and LoginApi instances to perform these tasks.
 });
+
+

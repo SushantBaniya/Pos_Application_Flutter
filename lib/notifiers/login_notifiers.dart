@@ -54,3 +54,18 @@ class SignupNotifier extends AsyncNotifier<SignupResponse?> {
 final signupNotifierProvider = AsyncNotifierProvider<SignupNotifier, SignupResponse?>(
   () => SignupNotifier(),
 );
+
+class RememberMeNotifier extends AsyncNotifier<bool> {
+  @override
+  Future<bool> build() async {
+    return false; // Default value for remember me is false
+  }
+
+  void setRememberMe(bool value) {
+    state = AsyncValue.data(value);
+  }
+}
+
+final rememberMeProvider = AsyncNotifierProvider<RememberMeNotifier, bool>(
+  () => RememberMeNotifier()
+);
