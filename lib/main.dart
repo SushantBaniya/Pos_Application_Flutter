@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
+            backgroundColor: Color(0xFF101B55),
             foregroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 60),
             elevation: 2,
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: StartupScreen(),
+      home: LoginScreen(),
     );
   }
 }

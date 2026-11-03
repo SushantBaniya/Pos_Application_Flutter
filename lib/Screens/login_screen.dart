@@ -143,6 +143,8 @@ class _LoginFormState extends ConsumerState<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    final loginState = ref.watch(loginNotifierProvider);
+
     ref.listen(loginNotifierProvider, (previous, next) {
       next.when(
         data: (data) {
@@ -151,8 +153,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           }
         },
         loading: () {
-          // Optionally show a loading indicator
-          debugPrint('Logging in...');
+          // s
         },
         error: (error, stackTrace) {
           // Handle login error, e.g., show a snackbar or dialog
@@ -166,7 +167,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
         TextField(
           controller: emailController,
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.email, color: Colors.green),
+            prefixIcon: const Icon(Icons.email, color: Color(0xFF101B55)),
             labelText: 'Email',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
@@ -176,14 +177,14 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           obscureText: true,
           controller: passwordController,
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.lock, color: Colors.green),
+            prefixIcon: const Icon(Icons.lock, color: Color(0xFF101B55)),
             labelText: 'Password',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
         ),
         const SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Checkbox(
               value: _rememberMe, // You can manage this state as needed
@@ -191,7 +192,8 @@ class _LoginFormState extends ConsumerState<LoginForm> {
                 ref.read(rememberMeProvider.notifier).setRememberMe(value ?? true);
               },
             ),
-            Text('Remember Me', style: TextStyle(color: Colors.green)),
+            Text('Remember Me', style: TextStyle(color: Color(0xFF101B55))),
+            const Spacer(), // Pushes the "Forgot Password?" button to the right
             TextButton(
               onPressed: () {
                 // Handle forgot password logic here
@@ -199,7 +201,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
               child: const Text(
                 'Forgot Password?',
                 style: TextStyle(
-                  color: Colors.green,
+                  color: Color(0xFF101B55),
                   decoration: TextDecoration.underline,
                 ),
               ),
@@ -207,19 +209,24 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           ],
         ),
         ElevatedButton( // Dont need to style this button as it will inherit the style from the theme defined in main.dart
-          onPressed: () {
+          onPressed: loginState.isLoading
+              ? null
+              : () {
             final email = emailController.text.trim();
             final password = passwordController.text.trim();
             ref.read(loginNotifierProvider.notifier).login(email, password);
           },
-          child: const Text('Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          child: Text(
+            loginState.isLoading ? 'Logging in...' : 'Login',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
         ),
         const SizedBox(height: 40),
         Row(children: [
           Expanded(child: Divider(color: Colors.grey[400])),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text('OR Continue with', style: TextStyle(color: Colors.green)),
+            child: Text('OR Continue with', style: TextStyle(color: Color(0xFF101B55))),
           ),
           Expanded(child: Divider(color: Colors.grey[400]))
         ],),
@@ -281,7 +288,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         TextField(
           decoration: InputDecoration(
             labelText: 'Username',
-            prefixIcon: const Icon(Icons.person, color: Colors.green),
+            prefixIcon: const Icon(Icons.person, color: Color(0xFF101B55)),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
           controller: usernameController,
@@ -289,7 +296,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         const SizedBox(height: 20),
         TextField(
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.email, color: Colors.green),
+            prefixIcon: const Icon(Icons.email, color: Color(0xFF101B55)),
             labelText: 'Email',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
@@ -299,7 +306,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         TextField(
           obscureText: true,
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.lock, color: Colors.green),
+            prefixIcon: const Icon(Icons.lock, color: Color(0xFF101B55)),
             labelText: 'Password',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
@@ -308,7 +315,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         const SizedBox(height: 20),
         TextField(
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.phone, color: Colors.green),
+            prefixIcon: const Icon(Icons.phone, color: Color(0xFF101B55)),
             labelText: 'Phone',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
@@ -317,7 +324,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         const SizedBox(height: 20),
         TextField(
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.business, color: Colors.green),
+            prefixIcon: const Icon(Icons.business, color: Color(0xFF101B55)),
             labelText: 'Business Name',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
           ),
