@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
+import 'package:pos_app/Screens/home_screen.dart';
 
 class Options extends Notifier<int> {
   @override
@@ -142,8 +143,23 @@ class _LoginFormState extends ConsumerState<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    final rememberMeState = ref.watch(rememberMeProvider);
-    final loginResponse = ref.watch(loginNotifierProvider);
+    ref.listen(loginNotifierProvider, (previous, next) {
+      next.when(
+        data: (data) {
+          if (data != null && context.mounted) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+          }
+        },
+        loading: () {
+          // Optionally show a loading indicator
+          debugPrint('Logging in...');
+        },
+        error: (error, stackTrace) {
+          // Handle login error, e.g., show a snackbar or dialog
+          debugPrint('Login failed: $error');
+        },
+      );
+    });
     return Column(
       children: [
         const SizedBox(height: 40),
@@ -195,22 +211,6 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             final email = emailController.text.trim();
             final password = passwordController.text.trim();
             ref.read(loginNotifierProvider.notifier).login(email, password);
-            loginResponse.when(
-              data: (data) {
-                if (data != null) {
-                  // Handle successful login, e.g., navigate to the home screen
-                  debugPrint('Login successful:');
-                }
-              },
-              loading: () {
-                // Optionally show a loading indicator
-                debugPrint('Logging in...');
-              },
-              error: (error, stackTrace) {
-                // Handle login error, e.g., show a snackbar or dialog
-                debugPrint('Login failed: $error');
-              },
-            );
           },
           child: const Text('Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
         ),
