@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
+import 'package:flutter/cupertino.dart';
+
+class Options extends Notifier<int> {
+  @override
+  int build() {
+    return 0; // Default selected index
+  }
+
+  void setSelectedIndex(int index) {
+    state = index;
+  }
+}
+
+final optionsProvider = NotifierProvider<Options, int>(Options.new);
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -50,9 +64,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddProduct()),
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => SizedBox(
+              height: MediaQuery.of(context).size.height * 0.48,
+              child: const AddProduct(),
+            ),
           );
         },
         icon: const Icon(Icons.add, color: Colors.white),
@@ -73,18 +91,93 @@ class AddProduct extends ConsumerStatefulWidget {
 class _AddProductState extends ConsumerState<AddProduct> {
   @override
   Widget build(BuildContext context) {
+    final tab = ref.watch(optionsProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Product'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Back to Home Screen'),
-        ),
-      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          const Text(
+            'Add Product',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'Enter product details below:',
+            style: TextStyle(fontSize: 16),
+          ),
+          const Divider(height: 20, thickness: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              children: [
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Customer Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: CupertinoSlidingSegmentedControl<int>(
+                    groupValue: ref.watch(optionsProvider),
+                    children: const {
+                      0: Text('Customer'),
+                      1: Text('Counter'),
+                    },
+                    onValueChanged: (int? value) {
+                      if (value != null) {
+                        ref.read(optionsProvider.notifier).setSelectedIndex(value);
+                      }
+                    },     
+                  ),
+                ),
+                const SizedBox(height: 20),
+                tab == 0 ? TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                  ),
+                ) : DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Select Counter',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'Counter 1', child: Text('Counter 1')),
+                    DropdownMenuItem(value: 'Counter 2', child: Text('Counter 2')),
+                    DropdownMenuItem(value: 'Counter 3', child: Text('Counter 3')),
+                  ],
+                  onChanged: (value) {
+                    // Handle product selection
+                  },
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      isScrollControlled: true,
+                      context: context,
+                      builder: (context) => SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.48,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children:const [
+                            
+                            Text('Product added successfully!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Submit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      )
     );
   }
 }
