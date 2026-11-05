@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:pos_app/models/product.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:pos_app/models/login.dart';
 import 'package:pos_app/models/signup.dart';
@@ -21,6 +22,14 @@ abstract class AuthApi { // abstract because we want to define the interface for
 abstract class OrderApi {
   factory OrderApi(Dio dio, {String? baseUrl}) = _OrderApi;
 
-  @POST('api/orders/')
+  @POST('api/orders/b<int>')
   Future<OrderResponse> createOrder(@Body() Map<String, dynamic> orderData);
+}
+
+@RestApi()
+abstract class ProductApi {
+  factory ProductApi(Dio dio, {String? baseUrl}) = _ProductApi;
+
+  @GET('api/products/')
+  Future<List<ProductResponse>> getProducts();
 }
