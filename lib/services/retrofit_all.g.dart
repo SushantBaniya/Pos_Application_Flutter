@@ -185,7 +185,7 @@ class _ProductApi implements ProductApi {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<List<ProductResponse>> getProducts() async {
+  Future<List<ProductResponse>> getProducts(int businessId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -194,7 +194,7 @@ class _ProductApi implements ProductApi {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            'api/products/',
+            'api/products/b${businessId}/',
             queryParameters: queryParameters,
             data: _data,
           )

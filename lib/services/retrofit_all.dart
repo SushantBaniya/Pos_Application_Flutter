@@ -30,6 +30,6 @@ abstract class OrderApi {
 abstract class ProductApi {
   factory ProductApi(Dio dio, {String? baseUrl}) = _ProductApi;
 
-  @GET('api/products/')
-  Future<List<ProductResponse>> getProducts();
+  @GET('api/products/b{businessId}/')
+  Future<List<ProductResponse>> getProducts(@Path('businessId') int businessId);
 }

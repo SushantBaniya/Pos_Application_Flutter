@@ -2,10 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pos_app/models/login.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pos_app/models/order.dart';
 import 'package:pos_app/notifiers/home_screen_notifiers.dart';
+import 'package:pos_app/notifiers/order_notifiers.dart';
 
 class Options extends Notifier<int> {
   @override
@@ -169,23 +171,41 @@ class _AddProductState extends ConsumerState<AddProduct> {
                           ),
                         ],
                         onChanged: (value) {
-                          target2 =  value == 'Counter 1'
+                          target2 = value == 'Counter 1'
                               ? 1
                               : value == 'Counter 2'
-                                  ? 2
-                                  : value == 'Counter 3'
-                                      ? 3
-                                      : null;
+                              ? 2
+                              : value == 'Counter 3'
+                              ? 3
+                              : null;
                         },
                       ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
+                    final businessId = ref
+                        .read(loginNotifierProvider)
+                        .valueOrNull
+                        ?.business_id;
+                    if (businessId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Business information is unavailable. Please sign in again.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
                     if (tab == 0) {
                       target1 = int.tryParse(_customerNameController.text);
-                      ref.read(custORCounterNotifierProvider.notifier).setId(target1 ?? 0, null);
+                      ref
+                          .read(custORCounterNotifierProvider.notifier)
+                          .setId(target1 ?? 0, null);
                     } else {
-                      ref.read(custORCounterNotifierProvider.notifier).setId(null, target2 ?? 0);
+                      ref
+                          .read(custORCounterNotifierProvider.notifier)
+                          .setId(null, target2 ?? 0);
                     }
                     showModalBottomSheet(
                       isScrollControlled: true,
@@ -196,6 +216,9 @@ class _AddProductState extends ConsumerState<AddProduct> {
                         child: const AddCart(),
                       ),
                     );
+                    ref
+                        .read(productNotifierProvider.notifier)
+                        .fetchProducts(businessId);
                   },
                   child: const Text(
                     'Submit',
@@ -211,20 +234,27 @@ class _AddProductState extends ConsumerState<AddProduct> {
   }
 }
 
+extension on AsyncValue<LoginResponse?> {
+  get valueOrNull => null;
+}
+
 class AddCart extends ConsumerStatefulWidget {
   const AddCart({super.key});
 
   @override
   ConsumerState<AddCart> createState() => _AddCartState();
 }
+
 class _AddCartState extends ConsumerState<AddCart> {
   @override
   Widget build(BuildContext context) {
+    final productsAsyncValue = ref.watch(productNotifierProvider);
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final cartWidth =
-              (constraints.maxWidth * 0.30).clamp(180.0, 390.0).toDouble();
+          final cartWidth = (constraints.maxWidth * 0.30)
+              .clamp(180.0, 390.0)
+              .toDouble();
 
           return Column(
             children: [
@@ -237,7 +267,10 @@ class _AddCartState extends ConsumerState<AddCart> {
                     const Expanded(
                       child: Text(
                         'Add Products to Cart',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -269,44 +302,54 @@ class _AddCartState extends ConsumerState<AddCart> {
                                   ),
                                 ),
                               ),
-                            )
+                            ),
                           ),
                           Expanded(
-                            child: GridView.builder(
-                              padding: const EdgeInsets.all(8),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8,
-                                childAspectRatio: 0.9,
+                            child: productsAsyncValue.when(
+                              loading: () => const Center(
+                                child: CircularProgressIndicator(),
                               ),
-                              itemCount: 10,
-                              itemBuilder: (context, index) => Card(
-                                margin: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Expanded(
-                                        child: Center(child: Text('Product ${index + 1}')),
-                                      ),
-                                      Text(
-                                        'Product ${index + 1}',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      const Text('Rs. 0.00'),
-                                    ],
-                                  ),
-                                ),
+                              error: (error, stack) => Center(
+                                child: Text('Could not load products: $error'),
                               ),
+                              data: (products) {
+                                final productList = products ?? const [];
+                                return GridView.builder(
+                                  itemCount: productList.length,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8,
+                                        childAspectRatio: 0.9,
+                                      ),
+                                  itemBuilder: (context, index) {
+                                    final product = productList[index];
+
+                                    return Card(
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            child: product.product_image.isEmpty
+                                                ? const Icon(Icons.inventory_2)
+                                                : Image.network(
+                                                    product.product_image,
+                                                    errorBuilder: (_, _, _) =>
+                                                        const Icon(
+                                                          Icons.inventory_2,
+                                                        ),
+                                                  ),
+                                          ),
+                                          Text(product.name),
+                                          Text(
+                                            'Rs. ${product.unit_price.toStringAsFixed(2)}',
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -319,18 +362,27 @@ class _AddCartState extends ConsumerState<AddCart> {
                         children: [
                           const ListTile(
                             dense: true,
-                            title: Text('Cart', style: TextStyle(fontWeight: FontWeight.bold)),
+                            title: Text(
+                              'Cart',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                           const Divider(height: 1),
                           const Expanded(
                             child: Center(
-                              child: Text('No items added yet', textAlign: TextAlign.center),
+                              child: Text(
+                                'No items added yet',
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                           const Divider(height: 1),
                           const ListTile(
                             dense: true,
-                            title: Text('Total:', style: TextStyle(fontWeight: FontWeight.bold)),
+                            title: Text(
+                              'Total:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             trailing: Text('Rs. 0.00'),
                           ),
                           Padding(
