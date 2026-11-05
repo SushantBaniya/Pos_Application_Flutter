@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pos_app/models/order.dart';
+import 'package:pos_app/notifiers/home_screen_notifiers.dart';
 
 class Options extends Notifier<int> {
   @override
@@ -97,6 +98,9 @@ class AddProduct extends ConsumerStatefulWidget {
 }
 
 class _AddProductState extends ConsumerState<AddProduct> {
+  int? target1;
+  int? target2;
+  final TextEditingController _customerNameController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     final tab = ref.watch(optionsProvider);
@@ -116,6 +120,7 @@ class _AddProductState extends ConsumerState<AddProduct> {
             child: Column(
               children: [
                 TextField(
+                  controller: _customerNameController,
                   decoration: const InputDecoration(
                     labelText: 'Customer Name',
                     border: OutlineInputBorder(),
@@ -164,12 +169,26 @@ class _AddProductState extends ConsumerState<AddProduct> {
                           ),
                         ],
                         onChanged: (value) {
-                          final target =  OrderTarget(counterId: value != null ? int.parse(value.split(' ').last) : null);
+                          target2 =  value == 'Counter 1'
+                              ? 1
+                              : value == 'Counter 2'
+                                  ? 2
+                                  : value == 'Counter 3'
+                                      ? 3
+                                      : null;
                         },
                       ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
+                    if (tab == 0) {
+                      target1 = int.tryParse(_customerNameController.text);
+                      final customerId = ref.read(custORCounterNotifierProvider.notifier).setId(target1 ?? 0, null);
+                      OrderTarget orderTarget = OrderTarget(customerId: target1, counterId: null);
+                    } else {
+                      final counterId = ref.read(custORCounterNotifierProvider.notifier).setId(null, target2 ?? 0);
+                      OrderTarget orderTarget = OrderTarget(customerId: null, counterId: target2);
+                    }
                     showModalBottomSheet(
                       isScrollControlled: true,
                       context: context,
