@@ -154,3 +154,16 @@ class Items {
 double _toDouble(dynamic value) {
   return value is num ? value.toDouble() : double.parse(value as String);
 }
+
+class OrderTarget {
+  final int? customerId;
+  final int? counterId;
+
+  const OrderTarget({
+    this.customerId,
+    this.counterId,
+  }) : assert(
+          (customerId != null) ^ (counterId != null),
+          'Choose either customer or counter',
+        );
+}

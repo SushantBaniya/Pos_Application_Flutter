@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:pos_app/models/order.dart';
 
 class Options extends Notifier<int> {
   @override
@@ -163,7 +164,7 @@ class _AddProductState extends ConsumerState<AddProduct> {
                           ),
                         ],
                         onChanged: (value) {
-                          // Handle product selection
+                          final target =  OrderTarget(counterId: value != null ? int.parse(value.split(' ').last) : null);
                         },
                       ),
                 const SizedBox(height: 20),
