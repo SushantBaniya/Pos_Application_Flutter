@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:pos_app/models/login.dart';
 import 'package:pos_app/models/signup.dart';
+import 'package:pos_app/models/order.dart';
 
 part 'retrofit_all.g.dart';
 
@@ -14,4 +15,12 @@ abstract class AuthApi { // abstract because we want to define the interface for
   
   @POST('api/signup/')
   Future<SignupResponse> signup(@Body() SignupRequest request); // Add the @Body() annotation to indicate that the request body should be sent as JSON and the response should be deserialized into a LoginResponse object
+}
+
+@RestApi()
+abstract class OrderApi {
+  factory OrderApi(Dio dio, {String? baseUrl}) = _OrderApi;
+
+  @POST('api/orders/')
+  Future<OrderResponse> createOrder(@Body() Map<String, dynamic> orderData);
 }

@@ -183,83 +183,17 @@ class _AddProductState extends ConsumerState<AddProduct> {
                   onPressed: () {
                     if (tab == 0) {
                       target1 = int.tryParse(_customerNameController.text);
-                      final customerId = ref.read(custORCounterNotifierProvider.notifier).setId(target1 ?? 0, null);
-                      OrderTarget orderTarget = OrderTarget(customerId: target1, counterId: null);
+                      ref.read(custORCounterNotifierProvider.notifier).setId(target1 ?? 0, null);
                     } else {
-                      final counterId = ref.read(custORCounterNotifierProvider.notifier).setId(null, target2 ?? 0);
-                      OrderTarget orderTarget = OrderTarget(customerId: null, counterId: target2);
+                      ref.read(custORCounterNotifierProvider.notifier).setId(null, target2 ?? 0);
                     }
                     showModalBottomSheet(
                       isScrollControlled: true,
                       context: context,
                       builder: (context) => SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.48,
+                        height: MediaQuery.of(context).size.height * 0.6,
                         width: double.infinity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: 280,
-                              height: 180,
-                              child: GridView.builder(
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisExtent: 56,
-                                      crossAxisSpacing: 8,
-                                      mainAxisSpacing: 8,
-                                    ),
-                                scrollDirection: Axis.vertical,
-                                itemCount: 10,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 6,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(24),
-                                      child: BackdropFilter(
-                                        filter: ImageFilter.blur(
-                                          sigmaX: 16,
-                                          sigmaY: 16,
-                                        ),
-                                        child: Container(
-                                          height: 56,
-                                          width: 200,
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF101B55),
-                                            borderRadius: BorderRadius.circular(
-                                              24,
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Item ${index + 1}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            const VerticalDivider(
-                              color: Colors.black,
-                              thickness: 1,
-                            ),
-                          ],
-                        ),
+                        child: const AddCart(),
                       ),
                     );
                   },
@@ -272,6 +206,153 @@ class _AddProductState extends ConsumerState<AddProduct> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class AddCart extends ConsumerStatefulWidget {
+  const AddCart({super.key});
+
+  @override
+  ConsumerState<AddCart> createState() => _AddCartState();
+}
+class _AddCartState extends ConsumerState<AddCart> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final cartWidth =
+              (constraints.maxWidth * 0.30).clamp(180.0, 390.0).toDouble();
+
+          return Column(
+            children: [
+              // Compact menu header to fit the existing half-height sheet.
+              SizedBox(
+                height: 48,
+                child: Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Text(
+                        'Add Products to Cart',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Close',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                            child: SizedBox(
+                              height: 44,
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Search for Products...',
+                                  prefixIcon: const Icon(Icons.search),
+                                  contentPadding: EdgeInsets.zero,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ),
+                          Expanded(
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(8),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                                childAspectRatio: 0.9,
+                              ),
+                              itemCount: 10,
+                              itemBuilder: (context, index) => Card(
+                                margin: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Expanded(
+                                        child: Center(child: Text('Product ${index + 1}')),
+                                      ),
+                                      Text(
+                                        'Product ${index + 1}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text('Rs. 0.00'),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const VerticalDivider(width: 1),
+                    SizedBox(
+                      width: cartWidth,
+                      child: Column(
+                        children: [
+                          const ListTile(
+                            dense: true,
+                            title: Text('Cart', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                          const Divider(height: 1),
+                          const Expanded(
+                            child: Center(
+                              child: Text('No items added yet', textAlign: TextAlign.center),
+                            ),
+                          ),
+                          const Divider(height: 1),
+                          const ListTile(
+                            dense: true,
+                            title: Text('Total:', style: TextStyle(fontWeight: FontWeight.bold)),
+                            trailing: Text('Rs. 0.00'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 42,
+                              child: ElevatedButton(
+                                onPressed: null,
+                                child: const Text('Add to Cart'),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
