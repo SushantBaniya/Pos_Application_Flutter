@@ -4,6 +4,7 @@ import 'package:retrofit/retrofit.dart';
 import 'package:pos_app/models/login.dart';
 import 'package:pos_app/models/signup.dart';
 import 'package:pos_app/models/order.dart';
+import 'package:pos_app/models/counter.dart';
 
 part 'retrofit_all.g.dart';
 
@@ -32,4 +33,12 @@ abstract class ProductApi {
 
   @GET('api/products/b{businessId}/')
   Future<List<ProductResponse>> getProducts(@Path('businessId') int businessId);
+}
+
+@RestApi()
+abstract class CounterApi {
+  factory CounterApi(Dio dio, {String? baseUrl}) = _CounterApi;
+
+  @GET('api/counters/b{businessId}/')
+  Future<List<CounterResponse>> getCounters(@Path('businessId') int businessId);
 }

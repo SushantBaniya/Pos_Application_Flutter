@@ -68,6 +68,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
+          final businessId = ref.read(loginNotifierProvider).value?.business_id;
+          if (businessId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Business information is unavailable. Please sign in again.',
+                ),
+              ),
+            );
+            return;
+          }
+          ref.read(counterNotifierProvider.notifier).fetchCounters(businessId);
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
@@ -105,6 +117,7 @@ class _AddProductState extends ConsumerState<AddProduct> {
   final TextEditingController _customerNameController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    final counterAsync = ref.watch(counterNotifierProvider);
     final tab = ref.watch(optionsProvider);
     return Scaffold(
       body: Column(
@@ -151,42 +164,52 @@ class _AddProductState extends ConsumerState<AddProduct> {
                           border: OutlineInputBorder(),
                         ),
                       )
-                    : DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: 'Select Counter',
-                          border: OutlineInputBorder(),
+                    : counterAsync.when(
+                        loading: () => const Center(
+                          child: CircularProgressIndicator(),
                         ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Counter 1',
-                            child: Text('Counter 1'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Counter 2',
-                            child: Text('Counter 2'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Counter 3',
-                            child: Text('Counter 3'),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          target2 = value == 'Counter 1'
-                              ? 1
-                              : value == 'Counter 2'
-                              ? 2
-                              : value == 'Counter 3'
-                              ? 3
-                              : null;
+                        error: (error, stack) => Center(
+                          child: Text('Could not load counters: $error'),
+                        ),
+                        data: (counters) {
+                          final counterList = counters ?? const [];
+                          return DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(
+                              labelText: 'Select Counter',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: counterList.map((counter) {
+                              return DropdownMenuItem<String>(
+                                value: counter.counter_number.toString(),
+                                child: Text(counter.counter_number.toString()),
+                              );
+                            }).toList(),
+                            initialValue: target2 != null
+                                ? counterList
+                                    .firstWhere(
+                                        (counter) => counter.id == target2)
+                                    .counter_number
+                                    .toString()
+                                : null,
+                            onChanged: (value) {
+                              target2 = value == 'Counter 1'
+                                  ? 1
+                                  : value == 'Counter 2'
+                                      ? 2
+                                      : value == 'Counter 3'
+                                          ? 3
+                                          : null;
+                            },
+                          );
                         },
                       ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     final businessId = ref
-                        .read(loginNotifierProvider)
-                        .valueOrNull
-                        ?.business_id;
+                      .read(loginNotifierProvider)
+                      .value
+                      ?.business_id;
                     if (businessId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -202,7 +225,27 @@ class _AddProductState extends ConsumerState<AddProduct> {
                       ref
                           .read(custORCounterNotifierProvider.notifier)
                           .setId(target1 ?? 0, null);
+                      if (target1 == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please enter a valid customer name.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
                     } else {
+                      if (target2 == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please select a valid counter.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
                       ref
                           .read(custORCounterNotifierProvider.notifier)
                           .setId(null, target2 ?? 0);

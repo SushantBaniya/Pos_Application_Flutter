@@ -4,6 +4,7 @@ import 'package:pos_app/models/order.dart';
 import 'package:pos_app/notifiers/providers.dart';
 import 'package:pos_app/services/retrofit_all.dart';
 import 'package:pos_app/models/product.dart';
+import 'package:pos_app/models/counter.dart';
 
 class OrderNotifier extends AsyncNotifier<OrderResponse?> {
   @override
@@ -62,4 +63,33 @@ class ProductNotifier extends AsyncNotifier<List<ProductResponse>?> {
 
 final productNotifierProvider = AsyncNotifierProvider<ProductNotifier, List<ProductResponse>?>(
   () => ProductNotifier(),
+);
+
+class CounterNotifier extends AsyncNotifier<List<CounterResponse>?> {
+  @override
+  Future<List<CounterResponse>?> build() async {
+    return null;
+  }
+
+  Future<void> fetchCounters(int businessId) async {
+    state = const AsyncValue.loading();
+    try {
+      final counterApi = ref.read(counterApiProvider);
+      final response = await counterApi.getCounters(businessId);
+      state = AsyncValue.data(response);
+    } on SocketException catch (e) {
+      state = AsyncValue.error('No Internet connection: ${e.message}', StackTrace.current);
+    } catch (e) {
+      state = AsyncValue.error('Failed to fetch counters: ${e.toString()}', StackTrace.current);
+    }
+  }
+}
+
+final counterApiProvider = Provider<CounterApi>((ref) {
+  final dio = ref.read(dioClientProvider);
+  return CounterApi(dio);
+});
+
+final counterNotifierProvider = AsyncNotifierProvider<CounterNotifier, List<CounterResponse>?>(
+  () => CounterNotifier(),
 );
