@@ -192,11 +192,11 @@ class _AddProductState extends ConsumerState<AddProduct> {
                                     .toString()
                                 : null,
                             onChanged: (value) {
-                              target2 = value == 'Counter 1'
+                              target2 = value == '1'
                                   ? 1
-                                  : value == 'Counter 2'
+                                  : value == '2'
                                       ? 2
-                                      : value == 'Counter 3'
+                                      : value == '3'
                                           ? 3
                                           : null;
                             },
