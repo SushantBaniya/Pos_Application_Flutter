@@ -43,7 +43,7 @@ class StartupScreen extends ConsumerWidget {
     return authStartup.when(
       data: (_) {
         // If the user is remembered and has a valid access token, navigate to the home screen
-        return const HomeScreen();
+        return const NavBar();
       },
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),

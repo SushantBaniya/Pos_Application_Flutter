@@ -1,5 +1,10 @@
 import 'dart:ui';
-
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pos_app/Screens/home_screen.dart';
+import 'package:pos_app/Screens/product_screen.dart';
+import 'package:pos_app/Screens/counter_screen.dart';
+import 'package:pos_app/Screens/billing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/models/login.dart';
@@ -8,6 +13,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:pos_app/models/order.dart';
 import 'package:pos_app/notifiers/home_screen_notifiers.dart';
 import 'package:pos_app/notifiers/order_notifiers.dart';
+
 
 class Options extends Notifier<int> {
   @override
@@ -21,6 +27,66 @@ class Options extends Notifier<int> {
 }
 
 final optionsProvider = NotifierProvider<Options, int>(Options.new);
+
+class NavBar extends ConsumerStatefulWidget {
+  const NavBar({super.key});
+
+  @override
+  ConsumerState<NavBar> createState() => _NavBarState();
+}
+
+class _NavBarState extends ConsumerState<NavBar> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> _widgetOptions = <Widget>[
+      const HomeScreen(),
+      const ProductScreen(),
+      const CounterScreen(),
+      const BillingScreen(),
+    ];
+
+    return Scaffold(
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Products',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.countertops),
+            label: 'Counters',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'Billing',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        unselectedItemColor: Colors.grey,
+        selectedItemColor: Colors.white,
+        backgroundColor: Color(0xFF101B55),
+        type: BottomNavigationBarType.fixed,
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -57,13 +123,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Stack(
         children: [
           Center(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/second');
-              },
-              child: const Text('Go to Second Screen'),
+            child: Text(
+              'Welcome, ${user?.username ?? "User"}!',
+              style: const TextStyle(fontSize: 24),
             ),
           ),
+          
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -173,32 +238,21 @@ class _AddProductState extends ConsumerState<AddProduct> {
                         ),
                         data: (counters) {
                           final counterList = counters ?? const [];
-                          return DropdownButtonFormField<String>(
+                          return DropdownButtonFormField<int>(
                             decoration: const InputDecoration(
                               labelText: 'Select Counter',
                               border: OutlineInputBorder(),
                             ),
                             items: counterList.map((counter) {
-                              return DropdownMenuItem<String>(
-                                value: counter.counter_number.toString(),
-                                child: Text(counter.counter_number.toString()),
+                              return DropdownMenuItem<int>(
+                                value: counter.id,
+                                child: Text(counter.counter_number?.toString() ?? 'Unknown Counter'),
                               );
                             }).toList(),
-                            initialValue: target2 != null
-                                ? counterList
-                                    .firstWhere(
-                                        (counter) => counter.id == target2)
-                                    .counter_number
-                                    .toString()
-                                : null,
-                            onChanged: (value) {
-                              target2 = value == '1'
-                                  ? 1
-                                  : value == '2'
-                                      ? 2
-                                      : value == '3'
-                                          ? 3
-                                          : null;
+                            onChanged: (int? value) {
+                              setState(() {
+                                target2 = value;
+                              });
                             },
                           );
                         },

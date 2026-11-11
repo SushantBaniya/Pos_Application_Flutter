@@ -149,7 +149,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
       next.when(
         data: (data) {
           if (data != null && context.mounted) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const NavBar()));
           }
         },
         loading: () {
