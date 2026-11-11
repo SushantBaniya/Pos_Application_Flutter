@@ -93,3 +93,48 @@ final counterApiProvider = Provider<CounterApi>((ref) {
 final counterNotifierProvider = AsyncNotifierProvider<CounterNotifier, List<CounterResponse>?>(
   () => CounterNotifier(),
 );
+
+
+class CartNotifier extends Notifier<Map<int, int>> {
+  @override
+  Map<int, int> build() => {};
+
+  void addProduct(ProductResponse product) {
+    state = {
+      ...state,
+      product.id: (state[product.id] ?? 0) + 1,
+    };
+  }
+
+  void removeProduct(ProductResponse product) {
+    final quantity = state[product.id] ?? 0;
+
+    if (quantity <= 1) {
+      final updated = {...state}..remove(product.id);
+      state = updated;
+    } else {
+      state = {
+        ...state,
+        product.id: quantity - 1,
+      };
+    }
+  }
+
+  void clearCart() {
+    state = {};
+  }
+
+  List<Item> toOrderItems() {
+    return state.entries
+        .map(
+          (entry) => Item(
+            product_id: entry.key,
+            quantity: entry.value,
+          ),
+        )
+        .toList();
+  }
+}
+
+final cartNotifierProvider =
+    NotifierProvider<CartNotifier, Map<int, int>>(CartNotifier.new);

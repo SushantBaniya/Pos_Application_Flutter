@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/Screens/home_screen.dart';
@@ -11,9 +12,9 @@ import 'package:pos_app/models/login.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pos_app/models/order.dart';
+import 'package:pos_app/models/product.dart';
 import 'package:pos_app/notifiers/home_screen_notifiers.dart';
 import 'package:pos_app/notifiers/order_notifiers.dart';
-
 
 class Options extends Notifier<int> {
   @override
@@ -54,15 +55,10 @@ class _NavBarState extends ConsumerState<NavBar> {
     ];
 
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: 'Products',
@@ -86,7 +82,6 @@ class _NavBarState extends ConsumerState<NavBar> {
     );
   }
 }
-
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -128,7 +123,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: const TextStyle(fontSize: 24),
             ),
           ),
-          
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -230,9 +224,8 @@ class _AddProductState extends ConsumerState<AddProduct> {
                         ),
                       )
                     : counterAsync.when(
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
                         error: (error, stack) => Center(
                           child: Text('Could not load counters: $error'),
                         ),
@@ -246,7 +239,10 @@ class _AddProductState extends ConsumerState<AddProduct> {
                             items: counterList.map((counter) {
                               return DropdownMenuItem<int>(
                                 value: counter.id,
-                                child: Text(counter.counter_number?.toString() ?? 'Unknown Counter'),
+                                child: Text(
+                                  counter.counter_number?.toString() ??
+                                      'Unknown Counter',
+                                ),
                               );
                             }).toList(),
                             onChanged: (int? value) {
@@ -261,9 +257,9 @@ class _AddProductState extends ConsumerState<AddProduct> {
                 ElevatedButton(
                   onPressed: () {
                     final businessId = ref
-                      .read(loginNotifierProvider)
-                      .value
-                      ?.business_id;
+                        .read(loginNotifierProvider)
+                        .value
+                        ?.business_id;
                     if (businessId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -293,9 +289,7 @@ class _AddProductState extends ConsumerState<AddProduct> {
                       if (target2 == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              'Please select a valid counter.',
-                            ),
+                            content: Text('Please select a valid counter.'),
                           ),
                         );
                         return;
@@ -346,6 +340,14 @@ class _AddCartState extends ConsumerState<AddCart> {
   @override
   Widget build(BuildContext context) {
     final productsAsyncValue = ref.watch(productNotifierProvider);
+    final target = ref.watch(custORCounterNotifierProvider);
+    final cart = ref.watch(cartNotifierProvider);
+    final products = productsAsyncValue.value ?? const <ProductResponse>[];
+    final productsById = {for (final product in products) product.id: product};
+    final cartTotal = cart.entries.fold<double>(0.0, (total, entry) {
+      final product = productsById[entry.key];
+      return total + (product?.unit_price ?? 0.0) * entry.value;
+    });
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -424,24 +426,36 @@ class _AddCartState extends ConsumerState<AddCart> {
                                     final product = productList[index];
 
                                     return Card(
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            child: product.product_image.isEmpty
-                                                ? const Icon(Icons.inventory_2)
-                                                : Image.network(
-                                                    product.product_image,
-                                                    errorBuilder: (_, _, _) =>
-                                                        const Icon(
-                                                          Icons.inventory_2,
-                                                        ),
-                                                  ),
-                                          ),
-                                          Text(product.name),
-                                          Text(
-                                            'Rs. ${product.unit_price.toStringAsFixed(2)}',
-                                          ),
-                                        ],
+                                      child: InkWell(
+                                        onTap: () {
+                                          ref
+                                              .read(
+                                                cartNotifierProvider.notifier,
+                                              )
+                                              .addProduct(product);
+                                        },
+                                        child: Column(
+                                          children: [
+                                            Expanded(
+                                              child:
+                                                  product.product_image.isEmpty
+                                                  ? const Icon(
+                                                      Icons.inventory_2,
+                                                    )
+                                                  : Image.network(
+                                                      product.product_image,
+                                                      errorBuilder: (_, _, _) =>
+                                                          const Icon(
+                                                            Icons.inventory_2,
+                                                          ),
+                                                    ),
+                                            ),
+                                            Text(product.name),
+                                            Text(
+                                              'Rs. ${product.unit_price.toStringAsFixed(2)}',
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     );
                                   },
@@ -457,7 +471,7 @@ class _AddCartState extends ConsumerState<AddCart> {
                       width: cartWidth,
                       child: Column(
                         children: [
-                          const ListTile(
+                          ListTile(
                             dense: true,
                             title: Text(
                               'Cart',
@@ -465,22 +479,43 @@ class _AddCartState extends ConsumerState<AddCart> {
                             ),
                           ),
                           const Divider(height: 1),
-                          const Expanded(
-                            child: Center(
-                              child: Text(
-                                'No items added yet',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+                          Expanded(
+                            child: cart.isEmpty
+                                ? const Center(
+                                    child: Text(
+                                      'No items added yet',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  )
+                                : ListView(
+                                    children: cart.entries.map((entry) {
+                                      final product = productsById[entry.key];
+                                      if (product == null) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return ListTile(
+                                        dense: true,
+                                        title: Text(product.name),
+                                        subtitle: Text(
+                                          '${entry.value} x Rs. ${product.unit_price.toStringAsFixed(2)}',
+                                        ),
+                                        trailing: Text(
+                                          'Rs. ${(product.unit_price * entry.value).toStringAsFixed(2)}',
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
                           ),
                           const Divider(height: 1),
-                          const ListTile(
+                          ListTile(
                             dense: true,
                             title: Text(
                               'Total:',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            trailing: Text('Rs. 0.00'),
+                            trailing: Text(
+                              'Rs. ${cartTotal.toStringAsFixed(2)}',
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8),
@@ -488,7 +523,49 @@ class _AddCartState extends ConsumerState<AddCart> {
                               width: double.infinity,
                               height: 42,
                               child: ElevatedButton(
-                                onPressed: null,
+                                onPressed: () {
+                                  final businessId = ref
+                                      .read(loginNotifierProvider)
+                                      .value
+                                      ?.business_id;
+                                  if (businessId == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Business information is unavailable. Please sign in again.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  final orderTarget = target.value;
+                                  if (orderTarget == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please select a customer or counter before proceeding.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  final items = ref
+                                      .read(cartNotifierProvider.notifier)
+                                      .toOrderItems();
+                                  ref
+                                      .read(orderNotifierProvider.notifier)
+                                      .createOrder(
+                                        OrderRequest(
+                                          customer_id: orderTarget.customerId,
+                                          counter_id: orderTarget.counterId,
+                                          total_amount: cartTotal,
+                                          tax: 0.0,
+                                          discount: 0.0,
+                                          items: items,
+                                        ),
+                                        businessId,
+                                      );
+                                },
                                 child: const Text('Add to Cart'),
                               ),
                             ),
