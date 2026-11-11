@@ -12,11 +12,11 @@ class OrderNotifier extends AsyncNotifier<OrderResponse?> {
     return null;
   }
 
-  Future<void> createOrder(Map<String, dynamic> orderData) async {
+  Future<void> createOrder(OrderRequest orderRequest, int businessId) async {
     state = const AsyncValue.loading();
     try {
       final orderApi = ref.read(orderApiProvider);
-      final response = await orderApi.createOrder(orderData);
+      final response = await orderApi.createOrder(businessId, orderRequest);
       state = AsyncValue.data(response);
     } on SocketException catch (e) {
       state = AsyncValue.error('No Internet connection: ${e.message}', StackTrace.current);
@@ -30,9 +30,9 @@ final orderNotifierProvider = AsyncNotifierProvider<OrderNotifier, OrderResponse
   () => OrderNotifier(),
 );
 
-final orderApiProvider = Provider<OrderApi>((ref) {
+final orderApiProvider = Provider<OrderListApi>((ref) {
   final dio = ref.read(dioClientProvider);
-  return OrderApi(dio);
+  return OrderListApi(dio);
 });
 
 

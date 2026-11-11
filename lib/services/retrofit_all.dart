@@ -19,13 +19,6 @@ abstract class AuthApi { // abstract because we want to define the interface for
   Future<SignupResponse> signup(@Body() SignupRequest request); // Add the @Body() annotation to indicate that the request body should be sent as JSON and the response should be deserialized into a LoginResponse object
 }
 
-@RestApi()
-abstract class OrderApi {
-  factory OrderApi(Dio dio, {String? baseUrl}) = _OrderApi;
-
-  @POST('api/orders/b<int>')
-  Future<OrderResponse> createOrder(@Body() Map<String, dynamic> orderData);
-}
 
 @RestApi()
 abstract class ProductApi {
@@ -41,4 +34,15 @@ abstract class CounterApi {
 
   @GET('api/counters/b{businessId}/')
   Future<List<CounterResponse>> getCounters(@Path('businessId') int businessId);
+}
+
+@RestApi()
+abstract class OrderListApi {
+  factory OrderListApi(Dio dio, {String? baseUrl}) = _OrderListApi;
+
+  @GET('api/orders/b{businessId}/')
+  Future<List<OrderResponse>> getOrders(@Path('businessId') int businessId);
+
+  @POST('api/orders/b{businessId}/')
+  Future<OrderResponse> createOrder(@Path('businessId') int businessId, @Body() OrderRequest orderRequest);
 }
