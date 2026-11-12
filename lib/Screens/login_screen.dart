@@ -156,8 +156,12 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           // s
         },
         error: (error, stackTrace) {
-          // Handle login error, e.g., show a snackbar or dialog
           debugPrint('Login failed: $error');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error.toString())),
+            );
+          }
         },
       );
     });

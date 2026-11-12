@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:pos_app/services/token_storage.dart';
 import 'package:pos_app/services/retrofit_all.dart';
 import 'package:pos_app/models/login.dart';
@@ -9,7 +10,11 @@ class AuthService {
   final AuthApi loginApi;
   final AuthApi signupApi;
 
-  AuthService({required this.tokenStorage, required this.loginApi, required this.signupApi});
+  AuthService({
+    required this.tokenStorage,
+    required this.loginApi,
+    required this.signupApi,
+  });
 
   Future<LoginResponse> login(LoginRequest request, bool rememberMe) async {
     try {
@@ -20,7 +25,9 @@ class AuthService {
       );
       await tokenStorage.saveRememberMe(rememberMe);
       return response;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Login response handling failed: $e');
+      debugPrintStack(stackTrace: stackTrace);
       throw mapError(e);
     }
   }
