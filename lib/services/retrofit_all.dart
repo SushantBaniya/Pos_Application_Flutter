@@ -26,6 +26,9 @@ abstract class ProductApi {
 
   @GET('api/products/b{businessId}/')
   Future<List<ProductResponse>> getProducts(@Path('businessId') int businessId);
+
+  @POST('api/products/b{businessId}/')
+  Future<ProductResponse> createProduct(@Path('businessId') int businessId, @Body() ProductRequest productRequest);
 }
 
 @RestApi()

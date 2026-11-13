@@ -66,3 +66,38 @@ class ProductResponse {
     );
   }
 }
+
+class ProductRequest {
+  final String product_name;
+  final int? category;
+  final double unit_price;
+  final String? cost_price;
+  final String? sku;
+  final int quantity;
+  final int? reorder_level;
+  final String? description;
+
+  ProductRequest({
+    required this.product_name,
+    this.category,
+    required this.unit_price,
+    this.cost_price,
+    this.sku,
+    required this.quantity,
+    this.reorder_level,
+    this.description,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'product_name': product_name,
+      'category': category,
+      'unit_price': unit_price,
+      'cost_price': cost_price,
+      'sku': sku,
+      'quantity': quantity,
+      'reorder_level': reorder_level,
+      'description': description,
+    };
+  }
+}

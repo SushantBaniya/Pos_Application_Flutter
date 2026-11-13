@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pos_app/notifiers/order_notifiers.dart';
 
 class ProductScreen extends ConsumerStatefulWidget {
   const ProductScreen({super.key});
@@ -11,6 +12,7 @@ class ProductScreen extends ConsumerStatefulWidget {
 class _ProductScreenState extends ConsumerState<ProductScreen> {
   @override
   Widget build(BuildContext context) {
+    final productState = ref.watch(productNotifierProvider);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -39,33 +41,22 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
             ),
             const SizedBox(height: 30),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    'Product List',
-                    style: TextStyle(fontSize: 18.0),
-                  ),
+                Text('Product List', style: TextStyle(fontSize: 18.0)),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    // Handle add product action
+                  },
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      // Handle add product action
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: IconButton(
-                    icon: const Icon(Icons.filter_list),
-                    onPressed: () {
-                      // Handle filter action
-                    },
-                  ),
+
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: () {
+                    // Handle filter action
+                  },
                 ),
               ],
             ),
@@ -76,37 +67,42 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: 10, // Replace with your actual product count
-                      itemBuilder: (context, index) {
-                        return Card(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: NetworkImage(
-                                'https://via.placeholder.com/150', // Replace with your product image URL
+                    child: productState.when(
+                      data: (products) {
+                        if (products == null || products.isEmpty) {
+                          return const Center(
+                            child: Text('No products available.'),
+                          );
+                        }
+                        return GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 3 / 2,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
                               ),
-                            ),
-                            title: Text(
-                              'Product Name $index',
-                            ), // Replace with your product name
-                            subtitle: Text(
-                              'Category $index',
-                            ), // Replace with your product category
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '\$${(index + 1) * 10}',
-                                ), // Replace with your product price
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Qty: ${index + 1}',
-                                ), // Replace with your product quantity
-                              ],
-                            ),
-                          ),
+                          itemCount: products.length,
+                          itemBuilder: (context, index) {
+                            final product = products[index];
+                            return Card(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(product.name),
+                                  Text(
+                                    '\$${product.unit_price.toStringAsFixed(2)}',
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         );
                       },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (error, stackTrace) =>
+                          Center(child: Text('Error: $error')),
                     ),
                   ),
                 ],
