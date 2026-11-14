@@ -30,6 +30,19 @@ class ProductResponse {
     return value?.toString();
   }
 
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static bool _toBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) return value.toLowerCase() == 'true';
+    return false;
+  }
+
   ProductResponse({
     required this.id,
     required this.name,
@@ -48,28 +61,32 @@ class ProductResponse {
   });
 
   factory ProductResponse.fromJson(Map<String, dynamic> json) {
-    return ProductResponse(
-      id: json['id'] as int,
-      name: json['product_name'] as String,
-      category: json['category'] as int?,
-      unit_price: _toDouble(json['unit_price']),
-      cost_price: _toNullableString(json['cost_price']),
-      sku: _toNullableString(json['sku']),
-      business_id: json['business_id'] as int,
-      quantity: json['quantity'] as int,
-      reorder_level: json['reorder_level'] as int,
-      is_low_stock: json['is_low_stock'] as bool,
-      description: _toNullableString(json['description']),
-      product_image: _toNullableString(json['product_Img']) ?? '',
-      is_created_at: DateTime.parse(json['is_created_at'] as String),
-      is_updated_at: DateTime.parse(json['is_updated_at'] as String),
-    );
-  }
+  final productJson = json['product'] is Map
+      ? Map<String, dynamic>.from(json['product'] as Map)
+      : json;
+
+  return ProductResponse(
+    id: productJson['id'] as int,
+    name: productJson['product_name'] as String,
+    category: productJson['category'] as int?,
+    unit_price: _toDouble(productJson['unit_price']),
+    cost_price: _toNullableString(productJson['cost_price']),
+    sku: _toNullableString(productJson['sku']),
+    business_id: productJson['business_id'] as int,
+    quantity: productJson['quantity'] as int,
+    reorder_level: productJson['reorder_level'] as int,
+    is_low_stock: productJson['is_low_stock'] as bool,
+    description: _toNullableString(productJson['description']),
+    product_image: _toNullableString(productJson['product_Img']) ?? '',
+    is_created_at: DateTime.parse(productJson['is_created_at'] as String),
+    is_updated_at: DateTime.parse(productJson['is_updated_at'] as String),
+  );
+}
 }
 
 class ProductRequest {
   final String product_name;
-  final int? category;
+  final int category;
   final double unit_price;
   final String? cost_price;
   final String? sku;
@@ -79,7 +96,7 @@ class ProductRequest {
 
   ProductRequest({
     required this.product_name,
-    this.category,
+    required this.category,
     required this.unit_price,
     this.cost_price,
     this.sku,

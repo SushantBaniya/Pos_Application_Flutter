@@ -59,6 +59,20 @@ class ProductNotifier extends AsyncNotifier<List<ProductResponse>?> {
       state = AsyncValue.error('Failed to fetch products: ${e.toString()}', StackTrace.current);
     }
   }
+
+  Future<void> createProduct(int businessId, ProductRequest productRequest) async {
+    state = const AsyncValue.loading();
+    try {
+      final productApi = ref.read(productApiProvider);
+      final response = await productApi.createProduct(businessId, productRequest);
+      // After creating the product, you might want to fetch the updated list of products
+      await fetchProducts(businessId); // Optionally, you can return the newly created product
+    } on SocketException catch (e) {
+      state = AsyncValue.error('No Internet connection: ${e.message}', StackTrace.current);
+    } catch (e) {
+      state = AsyncValue.error('Failed to create product: ${e.toString()}', StackTrace.current);
+    }
+  }
 }
 
 final productNotifierProvider = AsyncNotifierProvider<ProductNotifier, List<ProductResponse>?>(
