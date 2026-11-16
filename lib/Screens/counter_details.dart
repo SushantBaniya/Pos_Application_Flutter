@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:pos_app/notifiers/order_notifiers.dart';
+import 'package:pos_app/screens/billing_screen.dart';
 
 class CounterDetails extends ConsumerStatefulWidget {
   final int counterId;
@@ -42,9 +43,21 @@ class _CounterDetailsState extends ConsumerState<CounterDetails> {
               return ListTile(
                 title: Text('Order ID: ${order.id}'),
                 subtitle: Text('Total Amount: \$${order.total_amount.toStringAsFixed(2)}'),
-                onTap: () {
-                  // Handle order tap if needed
-                },
+                trailing: SizedBox(
+                  width: 100,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Navigate to BillingScreen with the order details
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BillingScreen(), // You can pass order details if needed
+                        ),
+                      );
+                    },
+                    child: const Text('Bill'),
+                  ),
+                ),
               );
             },
           );

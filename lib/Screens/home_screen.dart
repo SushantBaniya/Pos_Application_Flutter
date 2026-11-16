@@ -91,39 +91,164 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  Future<List<OrderResponse>>? _ordersFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final businessId = ref.read(loginNotifierProvider).value?.business_id;
+      if (businessId != null) {
+        ref.read(productNotifierProvider.notifier).fetchProducts(businessId);
+        setState(() {
+          _ordersFuture = ref.read(orderApiProvider).getOrders(businessId);
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final loginState = ref.watch(loginNotifierProvider);
+    final productState = ref.watch(productNotifierProvider);
+    final products = productState.value ?? <ProductResponse>[];
+    final lowStockProducts = products.where((product) =>
+        product.is_low_stock || product.quantity <= product.reorder_level).toList();
+    final inventoryValue = products.fold<double>(0, (total, product) =>
+        total + ((double.tryParse(product.cost_price ?? '') ?? product.unit_price) * product.quantity));
+    final now = DateTime.now();
     final user =
         loginState.value?.user; // Access the user object from the login state
+    final month = const [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ][now.month - 1];
+    final weekday = const [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    ][now.weekday - 1];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(Icons.account_circle, size: 30),
-            const SizedBox(width: 10),
-            Text('${user?.username ?? "User"}', style: TextStyle(fontSize: 20)),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () {
-                // Handle logout logic here
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Stack(
-        children: [
-          Center(
-            child: Text(
-              'Welcome, ${user?.username ?? "User"}!',
-              style: const TextStyle(fontSize: 24),
-            ),
+      backgroundColor: const Color(0xFFF8F9FC),
+      body: SafeArea(
+        child: FutureBuilder<List<OrderResponse>>(
+          future: _ordersFuture,
+          builder: (context, orderSnapshot) {
+            final orders = orderSnapshot.data ?? <OrderResponse>[];
+            final currentMonthOrders = orders.where((item) =>
+                item.order.order_date.year == now.year &&
+                item.order.order_date.month == now.month).toList();
+            final sales = currentMonthOrders.fold<double>(
+                0, (total, item) => total + item.order.total_amount);
+            final pendingCount = orders.where((item) =>
+                (item.order.status ?? '').toLowerCase() == 'pending').length;
+            final recentOrders = [...orders]
+              ..sort((a, b) => b.order.order_date.compareTo(a.order.order_date));
+            return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('${weekday.toUpperCase()}, ${month.toUpperCase()} ${now.day}', style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+                  const SizedBox(height: 5),
+                  Text('Hello, ${user?.username ?? "User"}!', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF101B55))),
+                  const SizedBox(height: 2),
+                  const Text("Here's your business overview", style: TextStyle(fontSize: 14, color: Color(0xFF718096))),
+                ])),
+                Container(width: 52, height: 52, decoration: const BoxDecoration(color: Color(0xFFEEF4FF), shape: BoxShape.circle), child: const Icon(Icons.person_outline, color: Color(0xFF2463EB), size: 27)),
+              ]),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: const Color(0xFFEEF5FF), borderRadius: BorderRadius.circular(16)),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('TOTAL SALES', style: TextStyle(color: Color(0xFF174CE6), fontSize: 14, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  Text('Rs. ${sales.toStringAsFixed(2)}', style: const TextStyle(fontSize: 29, fontWeight: FontWeight.w600, color: Color(0xFF101B55))),
+                  const SizedBox(height: 4),
+                  Text('$month ${now.year}', style: const TextStyle(color: Color(0xFF718096), fontSize: 14)),
+                ]),
+              ),
+              const SizedBox(height: 14),
+              Row(children: [
+                Expanded(child: _DashboardMetric(icon: Icons.shopping_cart_outlined, color: Color(0xFF00A66C), label: 'Purchase', value: '--')),
+                SizedBox(width: 10),
+                Expanded(child: _DashboardMetric(icon: Icons.inventory_2_outlined, color: Color(0xFF2463EB), label: 'Inventory', value: inventoryValue.toStringAsFixed(2))),
+              ]),
+              const SizedBox(height: 10),
+              Row(children: [
+                Expanded(child: _DashboardMetric(icon: Icons.layers_outlined, color: Color(0xFF9B27F5), label: 'Total Orders', value: '${orders.length}')),
+                const SizedBox(width: 10),
+                Expanded(child: _DashboardMetric(icon: Icons.access_time, color: Color(0xFFFF7900), label: 'Pending', value: '$pendingCount')),
+              ]),
+              const SizedBox(height: 20),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                const Text('Recent Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                TextButton(onPressed: () {}, child: const Text('View all')),
+              ]),
+              const SizedBox(height: 2),
+              if (orderSnapshot.connectionState == ConnectionState.waiting)
+                _dashboardPanel(const Center(child: CircularProgressIndicator()))
+              else if (orderSnapshot.hasError)
+                _dashboardPanel(Text('Could not load orders: ${orderSnapshot.error}', style: const TextStyle(color: Color(0xFF718096))))
+              else if (recentOrders.isEmpty)
+                _dashboardPanel(const Text('No orders found', style: TextStyle(fontSize: 16, color: Color(0xFF718096))))
+              else
+                ListView.builder(
+                  itemCount: recentOrders.length > 3 ? 3 : recentOrders.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final order = recentOrders[index].order;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _dashboardPanel(Row(children: [
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(order.customer_name ?? 'Order #${order.id}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                          const SizedBox(height: 4),
+                          Text(order.status ?? 'Order', style: const TextStyle(color: Color(0xFF718096), fontSize: 13)),
+                        ])),
+                        Text('Rs. ${order.total_amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                      ])),
+                    );
+                  },
+                ),
+              const SizedBox(height: 18),
+              const Text('Stock Alerts', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              if (productState.isLoading)
+                _dashboardPanel(const Center(child: CircularProgressIndicator()))
+              else if (productState.hasError)
+                _dashboardPanel(Text('Could not load stock: ${productState.error}', style: const TextStyle(color: Color(0xFF718096))))
+              else if (lowStockProducts.isEmpty)
+                _dashboardPanel(const Text('No stock alerts', style: TextStyle(color: Color(0xFF718096))))
+              else
+                ListView.builder(
+                  itemCount: lowStockProducts.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final product = lowStockProducts[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _dashboardPanel(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Expanded(child: Text(product.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                  Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: const Color(0xFFFFEBEB), borderRadius: BorderRadius.circular(20)), child: Text('${product.quantity} left', style: const TextStyle(color: Color(0xFFE53935), fontSize: 13))),
+                ]),
+                const SizedBox(height: 8),
+                const Text('Low stock alert: Reorder required', style: TextStyle(color: Color(0xFFFF4A4A), fontSize: 14)),
+                      ])),
+                    );
+                  },
+                ),
+            ],
           ),
-        ],
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -157,10 +282,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Color(0xFF101B55),
+        backgroundColor: const Color(0xFF101B55),
       ),
     );
   }
+}
+
+Widget _dashboardPanel(Widget child) => Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(15),
+  decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE1E4E8)), borderRadius: BorderRadius.circular(16)),
+  child: child,
+);
+
+class _DashboardMetric extends StatelessWidget {
+  const _DashboardMetric({required this.icon, required this.color, required this.label, required this.value});
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 130,
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE1E4E8)), borderRadius: BorderRadius.circular(16)),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Icon(icon, color: color, size: 22),
+      const SizedBox(height: 12),
+      Text(label, style: const TextStyle(color: Color(0xFF718096), fontSize: 14)),
+      const Spacer(),
+      Text(value, style: const TextStyle(color: Color(0xFF101B55), fontSize: 22, fontWeight: FontWeight.w600)),
+    ]),
+  );
 }
 
 class AddProduct extends ConsumerStatefulWidget {
@@ -570,11 +724,19 @@ class _AddCartState extends ConsumerState<AddCart> {
                                     if (order != null) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Order created successfully!'),
+                                            const SnackBar(
+                                              content: Text(
+                                                'Order created successfully!',
+                                              ),
+                                            ),
+                                          );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CounterScreen(),
                                         ),
                                       );
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const CounterScreen(),));
                                     }
                                   });
                                 },
