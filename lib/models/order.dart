@@ -74,7 +74,7 @@ class Order {
   final DateTime updated_at;
   final DateTime created_at;
   final double total_amount;
-  final String status;
+  final String? status;
   final int? counter_id;
   final String? counter_number;
   final List<Items> items;
@@ -89,7 +89,7 @@ class Order {
     required this.updated_at,
     required this.created_at,
     required this.total_amount,
-    required this.status,
+    this.status,
     required this.counter_id,
     required this.counter_number,
     required this.items,
@@ -106,9 +106,9 @@ class Order {
       updated_at: DateTime.parse(json['updated_at'] as String),
       created_at: DateTime.parse(json['created_at'] as String),
       total_amount: _toDouble(json['total_amount']),
-      status: json['status'] as String,
+      status: json['status'] as String?,
       counter_id: json['counter_id'] as int?,
-      counter_number: json['counter_number'] as String?,
+      counter_number: json['counter_number']?.toString(),
       items: (json['items'] as List<dynamic>)
           .map((item) => Items.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -124,7 +124,7 @@ class Items {
   final int quantity;
   final double unit_price;
   final double total_price;
-  final String status;
+  final String? status;
 
   Items({
     required this.id,
@@ -146,7 +146,7 @@ class Items {
       quantity: json['quantity'] as int,
       unit_price: _toDouble(json['unit_price']),
       total_price: _toDouble(json['total_price']),
-      status: json['status'] as String,
+      status: json['status'] as String?,
     );
   }
 }

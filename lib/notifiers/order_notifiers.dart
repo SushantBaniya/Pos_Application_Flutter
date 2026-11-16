@@ -166,3 +166,28 @@ class CartNotifier extends Notifier<Map<int, int>> {
 
 final cartNotifierProvider =
     NotifierProvider<CartNotifier, Map<int, int>>(CartNotifier.new);
+
+
+class FetchOrderNotifier extends AsyncNotifier<List<Order>?> {
+  @override
+  Future<List<Order>?> build() async {
+    return null;
+  }
+
+  Future<void> fetchOrders(int businessId, int counterId) async {
+    state = const AsyncValue.loading();
+    try {
+      final orderApi = ref.read(orderApiProvider);
+      final response = await orderApi.getOrdersByCounter(businessId, counterId);
+      state = AsyncValue.data(response);
+    } on SocketException catch (e) {
+      state = AsyncValue.error('No Internet connection: ${e.message}', StackTrace.current);
+    } catch (e) {
+      state = AsyncValue.error('Failed to fetch orders: ${e.toString()}', StackTrace.current);
+    }
+  }
+}
+
+final fetchOrderNotifierProvider = AsyncNotifierProvider<FetchOrderNotifier, List<Order>?>(
+  () => FetchOrderNotifier(),
+);

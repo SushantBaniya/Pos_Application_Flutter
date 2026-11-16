@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:pos_app/notifiers/order_notifiers.dart';
 import 'package:pos_app/models/counter.dart';
+import 'package:pos_app/Screens/counter_details.dart';
 
 class CounterScreen extends ConsumerStatefulWidget {
   const CounterScreen({super.key});
@@ -148,17 +149,26 @@ class _CounterScreenState extends ConsumerState<CounterScreen> {
                           itemBuilder: (context, index) {
                             final counter = counters[index];
                             return Card(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(counter.counter_number != null
-                                      ? 'Counter ${counter.counter_number}'
-                                      : 'Counter'),
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CounterDetails(counterId: counter.id),
+                                    ),
+                                  );
+                                },
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(counter.counter_number != null
+                                        ? 'Counter ${counter.counter_number}'
+                                        : 'Counter'),
                                   Text(
                                       'Location: ${counter.location ?? 'N/A'}'),
                                 ],
                               ),
-                            );
+                            ));
                           },
                         );
                       },

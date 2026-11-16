@@ -350,6 +350,35 @@ class _OrderListApi implements OrderListApi {
   }
 
   @override
+  Future<List<Order>> getOrdersByCounter(int businessId, int counterId) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<List<Order>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            'api/orders/b${businessId}/cntr${counterId}/',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<Order> _value;
+    try {
+      _value = _result.data!
+          .map((dynamic i) => Order.fromJson(i as Map<String, dynamic>))
+          .toList();
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<OrderResponse> createOrder(
     int businessId,
     OrderRequest orderRequest,

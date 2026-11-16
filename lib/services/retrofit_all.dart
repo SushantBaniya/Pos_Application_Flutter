@@ -49,6 +49,9 @@ abstract class OrderListApi {
   @GET('api/orders/b{businessId}/')
   Future<List<OrderResponse>> getOrders(@Path('businessId') int businessId);
 
+  @GET('api/orders/b{businessId}/cntr{counterId}/')
+  Future<List<Order>> getOrdersByCounter(@Path('businessId') int businessId, @Path('counterId') int counterId); 
+
   @POST('api/orders/b{businessId}/')
   Future<OrderResponse> createOrder(@Path('businessId') int businessId, @Body() OrderRequest orderRequest);
 }

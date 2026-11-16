@@ -348,6 +348,7 @@ class _AddCartState extends ConsumerState<AddCart> {
       final product = productsById[entry.key];
       return total + (product?.unit_price ?? 0.0) * entry.value;
     });
+    final orderState = ref.watch(orderNotifierProvider);
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -565,6 +566,17 @@ class _AddCartState extends ConsumerState<AddCart> {
                                         ),
                                         businessId,
                                       );
+                                  orderState.whenData((order) {
+                                    if (order != null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Order created successfully!'),
+                                        ),
+                                      );
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const CounterScreen(),));
+                                    }
+                                  });
                                 },
                                 child: const Text('Add to Cart'),
                               ),
