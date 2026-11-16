@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:pos_app/notifiers/order_notifiers.dart';
+import 'package:pos_app/models/counter.dart';
 
 class CounterScreen extends ConsumerStatefulWidget {
   const CounterScreen({super.key});
@@ -109,7 +110,9 @@ class _CounterScreenState extends ConsumerState<CounterScreen> {
               children: [
                 Text('Counter List', style: TextStyle(fontSize: 18.0)),
                 const Spacer(),
-                IconButton(icon: const Icon(Icons.add), onPressed: () {}),
+                IconButton(icon: const Icon(Icons.add), onPressed: () {
+                  _showCreateCounterDialog();
+                }),
 
                 IconButton(
                   icon: const Icon(Icons.filter_list),

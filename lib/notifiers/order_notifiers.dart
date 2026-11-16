@@ -97,6 +97,20 @@ class CounterNotifier extends AsyncNotifier<List<CounterResponse>?> {
       state = AsyncValue.error('Failed to fetch counters: ${e.toString()}', StackTrace.current);
     }
   }
+
+  Future<void> createCounter(CounterRequest counterRequest, int businessId) async {
+    state = const AsyncValue.loading();
+    try {
+      final counterApi = ref.read(counterApiProvider);
+      await counterApi.createCounter(businessId, counterRequest);
+      // After creating the counter, you might want to fetch the updated list of counters
+      await fetchCounters(businessId); // Optionally, you can return the newly created counter
+    } on SocketException catch (e) {
+      state = AsyncValue.error('No Internet connection: ${e.message}', StackTrace.current);
+    } catch (e) {
+      state = AsyncValue.error('Failed to create counter: ${e.toString()}', StackTrace.current);
+    }
+  }
 }
 
 final counterApiProvider = Provider<CounterApi>((ref) {

@@ -37,6 +37,9 @@ abstract class CounterApi {
 
   @GET('api/counters/b{businessId}/')
   Future<List<CounterResponse>> getCounters(@Path('businessId') int businessId);
+
+  @POST('api/counters/b{businessId}/')
+  Future<CounterResponse> createCounter(@Path('businessId') int businessId, @Body() CounterRequest counterRequest);
 }
 
 @RestApi()
