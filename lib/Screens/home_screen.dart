@@ -2,12 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pos_app/Screens/home_screen.dart';
 import 'package:pos_app/Screens/product_screen.dart';
 import 'package:pos_app/Screens/counter_screen.dart';
 import 'package:pos_app/Screens/billing_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/models/login.dart';
 import 'package:pos_app/notifiers/login_notifiers.dart';
 import 'package:flutter/cupertino.dart';

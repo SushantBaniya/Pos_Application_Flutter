@@ -51,7 +51,7 @@ class _CounterDetailsState extends ConsumerState<CounterDetails> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => BillingScreen(), // You can pass order details if needed
+                          builder: (context) => BillingScreen(order: order),
                         ),
                       );
                     },
