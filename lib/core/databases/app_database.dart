@@ -17,10 +17,10 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 1;
 }
 
-LazyDatabase _openConnection() {
+LazyDatabase _openConnection() { // lazy database connection to ensure the database is only opened when needed or first accessed, improving performance and resource usage.
   return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'pasale.db'));
-    return NativeDatabase(file);
+    final dbFolder = await getApplicationDocumentsDirectory(); // Get the application documents directory to store the database file
+    final file = File(p.join(dbFolder.path, 'pasale.db')); // Create a file path for the database file named 'pasale.db' in the application documents directory
+    return NativeDatabase(file); // Create a NativeDatabase instance using the file path, which will be used to interact with the database
   });
 }
