@@ -17,3 +17,8 @@ final productDaoProvider = Provider<ProductDao>((ref) {
   final database = ref.watch(databaseProvider);
   return ProductDao(database);
 });
+
+final localProductProvider = StreamProvider.autoDispose<List<Product>>((ref) {
+  final productDao = ref.watch(productDaoProvider);
+  return productDao.watchProducts();
+});

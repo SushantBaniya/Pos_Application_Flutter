@@ -31,6 +31,7 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -112,9 +113,9 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
   late final GeneratedColumn<int> reorderLevel = GeneratedColumn<int>(
     'reorder_level',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.int,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _isLowStockMeta = const VerificationMeta(
     'isLowStock',
@@ -287,6 +288,8 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
           _reorderLevelMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_reorderLevelMeta);
     }
     if (data.containsKey('is_low_stock')) {
       context.handle(
@@ -387,7 +390,7 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
       reorderLevel: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}reorder_level'],
-      ),
+      )!,
       isLowStock: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_low_stock'],
@@ -431,7 +434,7 @@ class Product extends DataClass implements Insertable<Product> {
   final String? sku;
   final int businessId;
   final int quantity;
-  final int? reorderLevel;
+  final int reorderLevel;
   final bool isLowStock;
   final String? description;
   final String? productImage;
@@ -448,7 +451,7 @@ class Product extends DataClass implements Insertable<Product> {
     this.sku,
     required this.businessId,
     required this.quantity,
-    this.reorderLevel,
+    required this.reorderLevel,
     required this.isLowStock,
     this.description,
     this.productImage,
@@ -476,9 +479,7 @@ class Product extends DataClass implements Insertable<Product> {
     }
     map['business_id'] = Variable<int>(businessId);
     map['quantity'] = Variable<int>(quantity);
-    if (!nullToAbsent || reorderLevel != null) {
-      map['reorder_level'] = Variable<int>(reorderLevel);
-    }
+    map['reorder_level'] = Variable<int>(reorderLevel);
     map['is_low_stock'] = Variable<bool>(isLowStock);
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
@@ -509,9 +510,7 @@ class Product extends DataClass implements Insertable<Product> {
       sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       businessId: Value(businessId),
       quantity: Value(quantity),
-      reorderLevel: reorderLevel == null && nullToAbsent
-          ? const Value.absent()
-          : Value(reorderLevel),
+      reorderLevel: Value(reorderLevel),
       isLowStock: Value(isLowStock),
       description: description == null && nullToAbsent
           ? const Value.absent()
@@ -540,7 +539,7 @@ class Product extends DataClass implements Insertable<Product> {
       sku: serializer.fromJson<String?>(json['sku']),
       businessId: serializer.fromJson<int>(json['businessId']),
       quantity: serializer.fromJson<int>(json['quantity']),
-      reorderLevel: serializer.fromJson<int?>(json['reorderLevel']),
+      reorderLevel: serializer.fromJson<int>(json['reorderLevel']),
       isLowStock: serializer.fromJson<bool>(json['isLowStock']),
       description: serializer.fromJson<String?>(json['description']),
       productImage: serializer.fromJson<String?>(json['productImage']),
@@ -562,7 +561,7 @@ class Product extends DataClass implements Insertable<Product> {
       'sku': serializer.toJson<String?>(sku),
       'businessId': serializer.toJson<int>(businessId),
       'quantity': serializer.toJson<int>(quantity),
-      'reorderLevel': serializer.toJson<int?>(reorderLevel),
+      'reorderLevel': serializer.toJson<int>(reorderLevel),
       'isLowStock': serializer.toJson<bool>(isLowStock),
       'description': serializer.toJson<String?>(description),
       'productImage': serializer.toJson<String?>(productImage),
@@ -582,7 +581,7 @@ class Product extends DataClass implements Insertable<Product> {
     Value<String?> sku = const Value.absent(),
     int? businessId,
     int? quantity,
-    Value<int?> reorderLevel = const Value.absent(),
+    int? reorderLevel,
     bool? isLowStock,
     Value<String?> description = const Value.absent(),
     Value<String?> productImage = const Value.absent(),
@@ -599,7 +598,7 @@ class Product extends DataClass implements Insertable<Product> {
     sku: sku.present ? sku.value : this.sku,
     businessId: businessId ?? this.businessId,
     quantity: quantity ?? this.quantity,
-    reorderLevel: reorderLevel.present ? reorderLevel.value : this.reorderLevel,
+    reorderLevel: reorderLevel ?? this.reorderLevel,
     isLowStock: isLowStock ?? this.isLowStock,
     description: description.present ? description.value : this.description,
     productImage: productImage.present ? productImage.value : this.productImage,
@@ -712,7 +711,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   final Value<String?> sku;
   final Value<int> businessId;
   final Value<int> quantity;
-  final Value<int?> reorderLevel;
+  final Value<int> reorderLevel;
   final Value<bool> isLowStock;
   final Value<String?> description;
   final Value<String?> productImage;
@@ -747,7 +746,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     this.sku = const Value.absent(),
     required int businessId,
     required int quantity,
-    this.reorderLevel = const Value.absent(),
+    required int reorderLevel,
     required bool isLowStock,
     this.description = const Value.absent(),
     this.productImage = const Value.absent(),
@@ -758,6 +757,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
        unitPrice = Value(unitPrice),
        businessId = Value(businessId),
        quantity = Value(quantity),
+       reorderLevel = Value(reorderLevel),
        isLowStock = Value(isLowStock),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
@@ -809,7 +809,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     Value<String?>? sku,
     Value<int>? businessId,
     Value<int>? quantity,
-    Value<int?>? reorderLevel,
+    Value<int>? reorderLevel,
     Value<bool>? isLowStock,
     Value<String?>? description,
     Value<String?>? productImage,
@@ -936,7 +936,7 @@ typedef $$ProductsTableCreateCompanionBuilder = ProductsCompanion Function({
   Value<String?> sku,
   required int businessId,
   required int quantity,
-  Value<int?> reorderLevel,
+  required int reorderLevel,
   required bool isLowStock,
   Value<String?> description,
   Value<String?> productImage,
@@ -954,7 +954,7 @@ typedef $$ProductsTableUpdateCompanionBuilder = ProductsCompanion Function({
   Value<String?> sku,
   Value<int> businessId,
   Value<int> quantity,
-  Value<int?> reorderLevel,
+  Value<int> reorderLevel,
   Value<bool> isLowStock,
   Value<String?> description,
   Value<String?> productImage,
@@ -1248,7 +1248,7 @@ class $$ProductsTableTableManager
                 Value<String?> sku = const Value.absent(),
                 Value<int> businessId = const Value.absent(),
                 Value<int> quantity = const Value.absent(),
-                Value<int?> reorderLevel = const Value.absent(),
+                Value<int> reorderLevel = const Value.absent(),
                 Value<bool> isLowStock = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<String?> productImage = const Value.absent(),
@@ -1284,7 +1284,7 @@ class $$ProductsTableTableManager
                 Value<String?> sku = const Value.absent(),
                 required int businessId,
                 required int quantity,
-                Value<int?> reorderLevel = const Value.absent(),
+                required int reorderLevel,
                 required bool isLowStock,
                 Value<String?> description = const Value.absent(),
                 Value<String?> productImage = const Value.absent(),
