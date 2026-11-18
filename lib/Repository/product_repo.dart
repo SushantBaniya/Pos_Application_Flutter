@@ -2,7 +2,6 @@
 import 'package:drift/drift.dart';
 
 import 'package:pos_app/core/databases/app_database.dart';
-import 'package:pos_app/core/databases/tables/product_table.dart';
 import 'package:pos_app/core/databases/product_dao.dart';
 import 'package:pos_app/services/retrofit_all.dart';
 

@@ -13,8 +13,8 @@ class ProductDao extends DatabaseAccessor<AppDatabase>
   ProductDao(super.db);
 
   // READ: Observe all products
-  Stream<List<Product>> watchProducts() {
-    return select(products).watch();
+  Stream<List<Product>> watchProducts(int businessId) {
+    return (select(products)..where((tbl) => tbl.businessId.equals(businessId))).watch();
   }
 
   // READ: Find product using Django ID
