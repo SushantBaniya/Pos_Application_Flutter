@@ -22,8 +22,12 @@ final productDaoProvider = Provider<ProductDao>((ref) {
 });
 
 final localProductProvider = StreamProvider.autoDispose<List<Product>>((ref) {
+  final businessId = ref.read(loginNotifierProvider).value?.business_id;
+  if (businessId == null) {
+    throw Exception('Business ID is null');
+  }
   final productDao = ref.watch(productDaoProvider);
-  return productDao.watchProducts();
+  return productDao.watchProducts(businessId);
 });
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {

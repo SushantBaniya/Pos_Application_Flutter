@@ -15,8 +15,8 @@ class ProductRepository {
   });
 
   // READ LOCAL PRODUCTS
-  Stream<List<Product>> watchProducts() {
-    return local.watchProducts();
+  Stream<List<Product>> watchProducts(int businessId) {
+    return local.watchProducts(businessId);
   }
 
   // FETCH FROM DJANGO AND SAVE TO SQLITE
